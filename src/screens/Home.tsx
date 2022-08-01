@@ -3,12 +3,13 @@ import { Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
-import { HStack, IconButton, VStack, useTheme, Text, Heading, FlatList, Center } from 'native-base';
-import { SignOut, ChatTeardropText } from 'phosphor-react-native';
+import { HStack, IconButton, VStack, useTheme, Text, Heading, FlatList, Center, useColorMode, useColorModeValue } from 'native-base';
+import { SignOut, ChatTeardropText, Moon } from 'phosphor-react-native';
 
 import { dateFormat } from '../utils/fireStoreDateFormat';
 
 import Logo from '../assets/logo_secondary.svg'
+import Logo2 from '../assets/logo_secondary_light.svg'
 
 import { Filter } from '../components/Filter';
 import { Order, OrderProps } from '../components/Order';
@@ -21,7 +22,11 @@ export function Home() {
     const [statusSelected, setStatusSelected] = useState<'open' | 'closed'>('open')
     const [orders, setOrders] = useState<OrderProps[]>([])
 
+    const { toggleColorMode } = useColorMode()
+
     const { colors } = useTheme();
+
+
     const navigation = useNavigation();
 
     function handleNewOrder() {
@@ -39,7 +44,6 @@ export function Home() {
                 return Alert.alert('Sair', 'Não foi possível sair.')
             })
     }
-
 
     useEffect(() => {
         setIsLoading(true)
@@ -67,32 +71,40 @@ export function Home() {
     },[statusSelected])
 
     return (
-        <VStack flex={1} pb={6} bg="gray.700">
+        <VStack flex={1} pb={6} bg={useColorModeValue("gray.700","gray.50")}>
             <HStack
                 w="full"
                 justifyContent="space-between"
                 alignItems="center"
-                bg="gray.600"
+                bg={useColorModeValue("gray.600","primary.800")}
                 pt={12}
                 pb={5}
                 px={6} //Padding x axis - horizontal
             >
-                <Logo />
+                {useColorModeValue(<Logo />, <Logo2 />)}
 
-                <IconButton
-                    icon={<SignOut size={26} color={colors.gray[300]} />}
-                    onPress={handleLogout}
-                />
+                <HStack>
+                    <IconButton
+                        icon={<Moon size={26} color={useColorModeValue(colors.gray[300], colors.gray[100])} />}
+                        mr={2}
+                        onPress={toggleColorMode}
+                    />
+
+                    <IconButton
+                        icon={<SignOut size={26} color={useColorModeValue(colors.gray[300], colors.gray[100])} />}
+                        onPress={handleLogout}
+                    />
+                </HStack>
 
             </HStack>
 
             <VStack flex={1} px={6}>
                 <HStack w="full" mt={8} mb={4} justifyContent="space-between" alignItems="center">
-                    <Heading color="gray.100">
+                    <Heading color={useColorModeValue("gray.100","gray.300")}>
                         Solicitações
                     </Heading>
 
-                    <Text color="gray.200">
+                    <Text color={useColorModeValue("gray.200", "gray.300")}>
                         {orders.length}
                     </Text>
 

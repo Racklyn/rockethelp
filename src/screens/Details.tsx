@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Text, VStack, useTheme, HStack, ScrollView, Box } from 'native-base';
+import { Text, VStack, useTheme, HStack, ScrollView, Box, useColorModeValue } from 'native-base';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import { dateFormat } from '../utils/fireStoreDateFormat';
@@ -36,6 +36,10 @@ export function Details() {
     const route = useRoute()
 
     const { orderId } = route.params as RouteParams
+
+    const bg = useColorModeValue("gray.700", "gray.50")
+    const headerBg = useColorModeValue("gray.600", "gray.50")
+    const mainBg = useColorModeValue("gray.500", "gray.300")
 
 
     function handleOrderClose() {
@@ -87,12 +91,12 @@ export function Details() {
     }
 
     return (
-        <VStack flex={1} bg="gray.700">
-            <Box px={6} bg="gray.600" >
+        <VStack flex={1} bg={bg}>
+            <Box px={6} bg={headerBg} >
                 <Header title='Solicitação' />
             </Box>
             
-            <HStack bg="gray.500" justifyContent="center" p={4}>
+            <HStack bg={mainBg} justifyContent="center" p={4}>
                 {
                     order.status === 'closed'
                     ? <CircleWavyCheck size={22} color={colors.green[300]} />

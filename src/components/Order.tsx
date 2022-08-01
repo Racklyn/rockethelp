@@ -1,4 +1,4 @@
-import { HStack, Text, Box, useTheme, VStack, Circle, Pressable, IPressableProps } from 'native-base';
+import { HStack, Text, Box, useTheme, VStack, Circle, Pressable, IPressableProps, useColorModeValue } from 'native-base';
 import { ClockAfternoon, Hourglass, CircleWavyCheck } from 'phosphor-react-native';
 
 export type OrderProps = {
@@ -18,13 +18,13 @@ export function Order({ data, ...rest }: Props) {
 
     const { colors } = useTheme();
 
-    const statusColor = data.status === 'open' ? colors.secondary[700] : colors.green[300]
+    const statusColor = data.status === 'open' ? colors.secondary[700] : colors.green[400]
 
 
     return (
         <Pressable {...rest}>
             <HStack
-                bg="gray.600"
+                bg={useColorModeValue("gray.600", "gray.100")}
                 mb={4}
                 alignItems="center"
                 justifyContent="space-between"
@@ -34,24 +34,24 @@ export function Order({ data, ...rest }: Props) {
             >
                 <Box h="full" w={2} bg={statusColor} />
                 <VStack flex={1} my={5} ml={5} >
-                    <Text color="white" fontSize="md">
+                    <Text color={useColorModeValue("white", "gray.600")} fontSize="md">
                         Patrimônio {data.patrimony}
                     </Text>
 
                     <HStack alignItems="center">
-                        <ClockAfternoon size={15} color={colors.gray[300]} />
-                        <Text color="gray.200" fontSize="xs" ml={1} >
+                        <ClockAfternoon size={15} color={useColorModeValue(colors.gray[300], colors.gray[400])} />
+                        <Text color={useColorModeValue("gray.200","gray.300")} fontSize="xs" ml={1} >
                             {data.when}
                         </Text>
                     </HStack>
 
                 </VStack>
 
-                <Circle bg="gray.500" h={12} w={12} mr={5}>
+                <Circle bg={useColorModeValue("gray.500", statusColor)} h={12} w={12} mr={5}>
                     {
                         data.status === 'closed'
-                            ? <CircleWavyCheck size={24} color={statusColor} />
-                            : <Hourglass size={24} color={statusColor} />
+                            ? <CircleWavyCheck size={24} color={useColorModeValue(statusColor, "white")} />
+                            : <Hourglass size={24} color={useColorModeValue(statusColor, "white")} />
                     }
                 </Circle>
 

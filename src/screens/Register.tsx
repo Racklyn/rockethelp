@@ -2,7 +2,7 @@ import { useState } from 'react';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 
-import { VStack } from 'native-base';
+import { VStack, useColorModeValue } from 'native-base';
 import { Alert } from 'react-native';
 
 
@@ -44,7 +44,7 @@ export function Register() {
 	}
 
 	return (
-		<VStack flex={1} p={6} bg="gray.600" >
+		<VStack flex={1} p={6} bg={useColorModeValue("gray.600", "gray.50")} >
 			<Header title='Solicitação' />
 
 			<Input

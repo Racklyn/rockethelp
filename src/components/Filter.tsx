@@ -1,4 +1,4 @@
-import { Text, Button, IButtonProps, useTheme } from 'native-base';
+import { Text, Button, IButtonProps, useTheme, useColorModeValue } from 'native-base';
 
 type Props = IButtonProps & {
     title: string;
@@ -10,19 +10,25 @@ export function Filter({ title, isActive = false, type, ...rest }: Props) {
 
     const {colors} = useTheme()
 
-    const colorType = type === 'open' ? colors.secondary[700] : colors.green[300]
+    const colorType = type === 'open' ? colors.secondary[700] : colors.green[400]
+
+    const textColor = useColorModeValue(colorType, "white")
 
     return (
         <Button
             variant="outline"
             borderWidth={isActive ? 1 : 0}
             borderColor={colorType}
-            bgColor="gray.600"
+            bgColor={useColorModeValue("gray.600", isActive ? colorType : "gray.50")}
             flex={1}
             size="sm"
             {...rest}
         >
-            <Text color={isActive ? colorType : "gray.300"} fontSize="xs" textTransform="uppercase">
+            <Text
+                color={isActive ? textColor : "gray.300"}
+                fontSize="xs"
+                textTransform="uppercase"
+                fontWeight={useColorModeValue("normal", "bold")}>
                 {title}
             </Text>
         </Button>
