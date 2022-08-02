@@ -54,6 +54,10 @@
     </dict>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Rockethelp necessita acessar a pasta de Fotos.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Rockethelp necessita acessar a Câmera.</string>
     <key>UIRequiredDeviceCapabilities</key>
     <array>
       <string>armv7</string>
