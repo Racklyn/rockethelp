@@ -212,15 +212,21 @@ export function Register() {
 							takePhotoFromCamera()
 						}}
 						background={modalBtnColor}
+						_pressed={{
+							opacity: 0.7
+						}}
 					/>
 					<Button
-						title="Escolher foto"
+						title="Escolher da galeria"
 						mt={6}
 						onPress={ () => {
 							setIsPhotoMenuOpened(false)
 							choosePhotoFromLibrary()
 						}}
 						background={modalBtnColor}
+						_pressed={{
+							opacity: 0.7
+						}}
 					/>
 					
 				</Modal.Body>
