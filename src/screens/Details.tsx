@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Text, VStack, useTheme, HStack, ScrollView, Box, useColorModeValue } from 'native-base';
+import { Text, VStack, useTheme, HStack, ScrollView, Box, useColorModeValue, Image } from 'native-base';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import { dateFormat } from '../utils/fireStoreDateFormat';
 import { OrderFirestoreDTO } from '../DTOs/OrderFirestoreDTO';
-import { CircleWavyCheck, Hourglass, DesktopTower, ClipboardText} from 'phosphor-react-native';
+import { CircleWavyCheck, Hourglass, DesktopTower, ClipboardText, Image as ImageIcon} from 'phosphor-react-native';
 
 import { Header } from '../components/Header';
 import { OrderProps } from '../components/Order';
@@ -23,6 +23,7 @@ type OrderDetails = OrderProps & {
     description: string;
     solution: string;
     closed: string;
+    image?: string;
 }
 
 export function Details() {
@@ -68,7 +69,7 @@ export function Details() {
         .doc(orderId)
         .get()
         .then((doc) => {
-            const { patrimony, description, status, created_at, closed_at, solution } = doc.data()
+            const { patrimony, description, status, created_at, closed_at, solution, image } = doc.data()
 
             const closed = closed_at ? dateFormat(closed_at) : null
 
@@ -79,7 +80,8 @@ export function Details() {
                 status,
                 solution,
                 when: dateFormat(created_at),
-                closed
+                closed,
+                image
             })
 
             setIsLoading(false)
@@ -127,11 +129,31 @@ export function Details() {
                     footer={`Registrado em ${order.when}`}
                 />
 
+                {
+                    order.image && 
+
+                    <CardDetails
+                        title='imagem do equipamento'
+                        icon={ImageIcon}
+                    >
+                        <Image
+                            source={{uri: order.image}}
+                            resizeMode="contain"
+                            flex={1}
+                            style={{
+								aspectRatio: 1,
+                            }}
+                            alt='Não foi possível carregar a imagem'
+                        />
+                    </CardDetails>
+                }
+
                 <CardDetails
                     title='solução'
                     icon={CircleWavyCheck}
                     description={order.solution}
                     footer={order.closed && `Encerrado em ${order.closed}`}
+                    mb={20}
                 >
                     {
                         order.status === 'open' &&

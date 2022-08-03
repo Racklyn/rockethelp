@@ -60,7 +60,7 @@ export function Home() {
                         status,
                         when: dateFormat(created_at)
                     }
-                })
+                }).sort((a, b) => (a.when > b.when) ? -1 : 1)
                 setOrders(data)
                 setIsLoading(false)
 

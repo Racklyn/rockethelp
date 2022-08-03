@@ -1,8 +1,8 @@
 import { ReactNode } from 'react';
 import { IconProps } from 'phosphor-react-native';
-import { VStack, HStack, Text, Box, useTheme, useColorModeValue } from 'native-base';
+import { VStack, HStack, Text, Box, useTheme, useColorModeValue, IBoxProps } from 'native-base';
 
-type Props = {
+type Props = IBoxProps & {
     title: string;
     description?: string;
     footer?: string;
@@ -15,7 +15,8 @@ export function CardDetails({
     description,
     footer = null,
     icon: Icon, //Renomeando icon as Icon
-    children
+    children,
+    ...rest
 }: Props) {
 
     const {colors} = useTheme()
@@ -24,7 +25,7 @@ export function CardDetails({
     const footerColor = useColorModeValue("gray.300", "white")
 
     return (
-        <VStack bg={useColorModeValue("gray.600", "gray.200")} p={5} mt={5} rounded="sm">
+        <VStack bg={useColorModeValue("gray.600", "gray.200")} p={5} mt={5} rounded="sm" {...rest}>
             <HStack alignItems="center" mb={4}>
                 <Icon color={useColorModeValue(colors.primary[700], colors.primary[800])} />
                 <Text ml={2} color={useColorModeValue("gray.300", "gray.400")} fontSize="sm" textTransform="uppercase" >

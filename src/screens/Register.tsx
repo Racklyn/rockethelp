@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
 import { useNavigation } from '@react-navigation/native';
 import ImagePicker from 'react-native-image-crop-picker';
 
-import { VStack, useColorModeValue, Button as ButtonNativeBase, Heading, Slide, Box, Modal, Image, Text } from 'native-base';
-import { Alert } from 'react-native';
 
+import { VStack, useColorModeValue, Button as ButtonNativeBase, Heading, Modal, Text, ScrollView, Circle, Pressable, useTheme } from 'native-base';
+import { Alert, ImageBackground } from 'react-native';
+import { X, Image as ImageIcon } from 'phosphor-react-native';
 
 import { Button } from '../components/Button';
 import { Header } from '../components/Header';
@@ -16,7 +18,9 @@ export function Register() {
 	const [isLoading, setIsLoading] = useState(false)
 	const [patrimony, setPatrimony] = useState('')
 	const [description, setDescription] = useState('')
-	const [imageUrl, setImageUrl] = useState('')
+	const [image, setimage] = useState(null)
+
+	const { colors } = useTheme()
 
 	const [isPhotoMenuOpened, setIsPhotoMenuOpened] = useState(false)
 
@@ -25,16 +29,17 @@ export function Register() {
 	const photoBtnBg = useColorModeValue("gray.600", "gray.50")
 	const photoBtnBorderColor = useColorModeValue("gray.300", "gray.200")
 	const photoBtnBorder2Color = useColorModeValue("green.500", "primary.700")
+	const modalBtnColor = useColorModeValue("primary.800", "green.500")
 
 	function takePhotoFromCamera() {
 		ImagePicker.openCamera({
-			width: 300,
-			height: 300,
+			width: 600,
+			height: 600,
 			cropping: true,
 			compressImageQuality: 0.7
 		}).then(image => {
 			console.log(image);
-			setImageUrl(image.path)
+			setimage(image.path)
 		}).catch(e => {
 			console.log(e)
 		});
@@ -42,30 +47,47 @@ export function Register() {
 
 	function choosePhotoFromLibrary() {
 		ImagePicker.openPicker({
-			width: 300,
-			height: 300,
+			width: 600,
+			height: 600,
 			cropping: true,
 			compressImageQuality: 0.7
 		}).then(image => {
 			console.log(image);
-			setImageUrl(image.path)
+			setimage(image.path)
 		}).catch(e => {
 			console.log(e)
 		});
 	}
 
-	function handleNewOrderResgister() {
+	async function handleNewOrderResgister() {
 		if (!patrimony || !description) {
 			return Alert.alert('Registrar', 'Preencha todos os campos.')
 		}
 
 		setIsLoading(true)
 
+		const uploadUri = image
+		let fileName = uploadUri.substring(uploadUri.lastIndexOf('/') + 1)
+
+		// Adding timestamp to File name
+		const extension = fileName.split('.').pop()
+		const name = fileName.split('.').slice(0, -1).join('.')
+		fileName = name + '_' + Date.now() + '.' + extension
+
+		let hasUploadedImg = false
+		try {
+			await storage().ref(fileName).putFile(uploadUri)
+			hasUploadedImg = true
+		} catch (error) {
+			console.log(error)
+		}
+
 		firestore().collection('orders').add({
 			patrimony,
 			description,
 			status: 'open',
-			created_at: firestore.FieldValue.serverTimestamp()
+			created_at: firestore.FieldValue.serverTimestamp(),
+			image: hasUploadedImg && await storage().ref(fileName).getDownloadURL()
 		})
 			.then(() => {
 				Alert.alert('Solicitação', 'Solicitação registrada com sucesso!')
@@ -83,46 +105,56 @@ export function Register() {
 		<>
 			<VStack flex={1} p={6} bg={useColorModeValue("gray.600", "gray.50")} >
 				<Header title='Solicitação' />
-				{/* TODO: Maybe, add a scrollView here */}
-				<Input
-					placeholder="Número do patrimônio"
-					mt={4}
-					onChangeText={setPatrimony}
-				/>
-
-				<Input
-					placeholder="Descrição do problema"
-					flex={1}
-					mt={5}
-					onChangeText={setDescription}
-					multiline
-					textAlignVertical="top"
-				/>
 
 
+				<ScrollView showsVerticalScrollIndicator={false}>
+				
+					<Input
+						placeholder="Número do patrimônio"
+						mt={4}
+						isDisabled={isLoading}
+						onChangeText={setPatrimony}
+					/>
 
-				{/* TODO: Make a condition for hinding buttons and showing the image */}
+					<Input
+						placeholder="Descrição do problema"
+						mt={5}
+						maxHeight="250"
+						minHeight="250"
+						isDisabled={isLoading}
+						onChangeText={setDescription}
+						multiline
+						textAlignVertical="top"
 
-				{
-					imageUrl.length !== 0 ?
-						<>
-							<Image
-								mt={4}
+					/>
+
+					{
+						image ?
+							
+							<ImageBackground
+								style={{
+									marginTop: 10,
+									marginLeft: 4, 
+									flex: 1,
+									aspectRatio: 1,
+									alignItems: 'flex-end',
+									padding: 10
+								}}
 								resizeMode='contain'
-								flex={1}
-								source={{
-									uri: imageUrl
-								}}
-								alt="Não foi possível carregar a imagem"
-								
-							/>
-							<ButtonNativeBase width="20" onPress={() => setImageUrl('')}>
-								X
-							</ButtonNativeBase>
-						</>
+								source={{ uri: image }}
+							>
+								<Pressable isDisabled={isLoading} onPress={() => {setimage(null)}} _pressed={{
+									opacity: 0.7
+								}}>
+									<Circle bg="gray.300" p={1}>
+										<X size={16} color="white" />
+									</Circle>
+								</Pressable>
+							</ImageBackground>
+						
 
-						:
-						<>
+							:
+							
 							<ButtonNativeBase
 								bg={photoBtnBg}
 								h={20}
@@ -136,32 +168,15 @@ export function Register() {
 									borderColor: photoBtnBorder2Color,
 									bg: photoBtnBg
 								}}
-								onPress={takePhotoFromCamera}    //() => setIsPhotoMenuOpened(true)
+								onPress={() => setIsPhotoMenuOpened(true)}
 							>
-								<Heading color="gray.300" fontSize="sm"> ADICIONAR FOTO </Heading>
+								<Heading color="gray.300" fontSize="sm"> + IMAGEM DO EQUIPAMENTO </Heading>
 							</ButtonNativeBase>
 
-							{/* TODO: Delete one of this buttons and create modal menu */}
-							<ButtonNativeBase
-								bg={photoBtnBg}
-								h={20}
-								borderColor={photoBtnBorderColor}
-								borderWidth={2}
-								borderStyle="dashed"
-								mt={2}
-								fontSize="sm"
-								rounded="sm"
-								_pressed={{
-									borderColor: photoBtnBorder2Color,
-									bg: photoBtnBg
-								}}
-								onPress={choosePhotoFromLibrary}
-							>
-								<Heading color="gray.300" fontSize="sm"> ESCOLHER DA BIBLIOTECA </Heading>
-							</ButtonNativeBase>
+			
+					}
 
-						</>
-				}
+				</ScrollView>
 
 
 				<Button
@@ -171,19 +186,48 @@ export function Register() {
 					onPress={handleNewOrderResgister}
 				/>
 
-				{/* <Slide in={isPhotoMenuOpened} placement="bottom" flex={1} justifyContent="space-between">
-				<Box bg="teal.500">
-					Olá
-				</Box>
-			</Slide> */}
+				
 
 			</VStack>
 
-			{/* <Modal isOpen={isPhotoMenuOpened} onClose={() => setIsPhotoMenuOpened(false)}>
-			<Modal.Content></Modal.Content>
 
-		</Modal> */}
 
+			<Modal isOpen={isPhotoMenuOpened} onClose={() => setIsPhotoMenuOpened(false)}>
+			<Modal.Content
+				bg={photoBtnBg}
+			>
+				<Modal.CloseButton />
+				<Modal.Header bg={photoBtnBg} alignItems="center" flexDirection="row">
+					<ImageIcon size={20} color={colors.gray[300]} />
+					<Text color="gray.300" bold ml={2}>
+						IMAGEM DO EQUIPAMENTO 
+					</Text>
+				</Modal.Header>
+				<Modal.Body>
+					<Button
+						title="Tirar foto"
+						mt={6}
+						onPress={() => {
+							setIsPhotoMenuOpened(false)
+							takePhotoFromCamera()
+						}}
+						background={modalBtnColor}
+					/>
+					<Button
+						title="Escolher foto"
+						mt={6}
+						onPress={ () => {
+							setIsPhotoMenuOpened(false)
+							choosePhotoFromLibrary()
+						}}
+						background={modalBtnColor}
+					/>
+					
+				</Modal.Body>
+			</Modal.Content>
+
+			</Modal> 
 		</>
+
 	);
 }
